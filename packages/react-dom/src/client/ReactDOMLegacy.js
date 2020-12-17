@@ -172,12 +172,13 @@ function warnOnInvalidCallback(callback: mixed, callerName: string): void {
   }
 }
 
+// 渲染组件的子组件树至父组件
 function legacyRenderSubtreeIntoContainer(
-  parentComponent: ?React$Component<any, any>,
-  children: ReactNodeList,
-  container: Container,
-  forceHydrate: boolean,
-  callback: ?Function,
+  parentComponent: ?React$Component<any, any>, // 父组件 这里为null
+  children: ReactNodeList, // element 虚拟dom树
+  container: Container, // html dom根对象
+  forceHydrate: boolean, // 服务断渲染标识
+  callback: ?Function, // 回调函数，这里没有
 ) {
   if (__DEV__) {
     topLevelUpdateWarnings(container);
@@ -189,7 +190,7 @@ function legacyRenderSubtreeIntoContainer(
   let root: RootType = (container._reactRootContainer: any);
   let fiberRoot;
   if (!root) {
-    // Initial mount
+    // Initial mount 初次渲染
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,
       forceHydrate,
@@ -215,7 +216,7 @@ function legacyRenderSubtreeIntoContainer(
         originalCallback.call(instance);
       };
     }
-    // Update
+    // Update 返回根容器fiber树的根fiber实例
     updateContainer(children, fiberRoot, parentComponent, callback);
   }
   return getPublicRootInstance(fiberRoot);

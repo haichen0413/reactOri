@@ -7,6 +7,7 @@
  * @flow
  */
 
+// 在组件里订阅额外数据的工具
 'use strict';
 
 export * from './src/createSubscription';

@@ -7,6 +7,10 @@
  * @flow
  */
 
+ /**
+  * 重点api
+  * */
+
 import ReactVersion from 'shared/ReactVersion';
 import {
   REACT_FRAGMENT_TYPE,
@@ -19,19 +23,21 @@ import {
   REACT_SCOPE_TYPE,
 } from 'shared/ReactSymbols';
 
-import {Component, PureComponent} from './ReactBaseClasses';
-import {createRef} from './ReactCreateRef';
-import {forEach, map, count, toArray, only} from './ReactChildren';
+import { Component, PureComponent } from './ReactBaseClasses';
+import { createRef } from './ReactCreateRef';
+import { forEach, map, count, toArray, only } from './ReactChildren';
+
 import {
   createElement as createElementProd,
   createFactory as createFactoryProd,
   cloneElement as cloneElementProd,
   isValidElement,
 } from './ReactElement';
-import {createContext} from './ReactContext';
-import {lazy} from './ReactLazy';
-import {forwardRef} from './ReactForwardRef';
-import {memo} from './ReactMemo';
+
+import { createContext } from './ReactContext';
+import { lazy } from './ReactLazy';
+import { forwardRef } from './ReactForwardRef';
+import { memo } from './ReactMemo';
 import {
   getCacheForType,
   useCallback,
@@ -49,6 +55,10 @@ import {
   useDeferredValue,
   useOpaqueIdentifier,
 } from './ReactHooks';
+
+/**
+ * 次重点
+ */
 import {
   createElementWithValidation,
   createFactoryWithValidation,
