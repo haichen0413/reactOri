@@ -285,6 +285,13 @@ export function hydrate(
   );
 }
 
+/**
+ * 
+ * @element 
+ * @container 挂在的容器 一般是 #app
+ * @callback render完成后的回调函数
+ * 
+ *  */
 export function render(
   element: React$Element<any>,
   container: Container,
