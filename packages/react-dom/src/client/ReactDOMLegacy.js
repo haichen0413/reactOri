@@ -180,10 +180,6 @@ function legacyRenderSubtreeIntoContainer(
   forceHydrate: boolean, // 服务断渲染标识
   callback: ?Function, // 回调函数，这里没有
 ) {
-  if (__DEV__) {
-    topLevelUpdateWarnings(container);
-    warnOnInvalidCallback(callback === undefined ? null : callback, 'render');
-  }
 
   // TODO: Without `any` type, Flow says "Property cannot be accessed on any
   // member of intersection type." Whyyyyyy.
