@@ -794,19 +794,6 @@ function updateClassComponent(
     hasContext,
     renderLanes,
   );
-  if (__DEV__) {
-    const inst = workInProgress.stateNode;
-    if (shouldUpdate && inst.props !== nextProps) {
-      if (!didWarnAboutReassigningProps) {
-        console.error(
-          'It looks like %s is reassigning its own `this.props` while rendering. ' +
-            'This is not supported and can lead to confusing bugs.',
-          getComponentName(workInProgress.type) || 'a component',
-        );
-      }
-      didWarnAboutReassigningProps = true;
-    }
-  }
   return nextUnitOfWork;
 }
 
@@ -899,7 +886,7 @@ function pushHostRootContext(workInProgress) {
   pushHostContainer(workInProgress, root.containerInfo);
 }
 
-
+// 第一次渲染
 function updateHostRoot(current, workInProgress, renderLanes) {
 
   pushHostRootContext(workInProgress);
@@ -929,9 +916,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
         root.mutableSourceEagerHydrationData;
       if (mutableSourceEagerHydrationData != null) {
         for (let i = 0; i < mutableSourceEagerHydrationData.length; i += 2) {
-          const mutableSource = ((mutableSourceEagerHydrationData[
-            i
-          ]: any): MutableSource<any>);
+          const mutableSource = mutableSourceEagerHydrationData[i];
           const version = mutableSourceEagerHydrationData[i + 1];
           setWorkInProgressVersion(mutableSource, version);
         }
@@ -1228,117 +1213,8 @@ function mountIndeterminateComponent(
   } else {
     // Proceed under the assumption that this is a function component
     workInProgress.tag = FunctionComponent;
-    if (__DEV__) {
-      if (disableLegacyContext && Component.contextTypes) {
-        console.error(
-          '%s uses the legacy contextTypes API which is no longer supported. ' +
-            'Use React.createContext() with React.useContext() instead.',
-          getComponentName(Component) || 'Unknown',
-        );
-      }
-
-      if (
-        debugRenderPhaseSideEffectsForStrictMode &&
-        workInProgress.mode & StrictMode
-      ) {
-        disableLogs();
-        try {
-          value = renderWithHooks(
-            null,
-            workInProgress,
-            Component,
-            props,
-            context,
-            renderLanes,
-          );
-        } finally {
-          reenableLogs();
-        }
-      }
-    }
     reconcileChildren(null, workInProgress, value, renderLanes);
-    if (__DEV__) {
-      validateFunctionComponentInDev(workInProgress, Component);
-    }
     return workInProgress.child;
-  }
-}
-
-function validateFunctionComponentInDev(workInProgress: Fiber, Component: any) {
-  if (__DEV__) {
-    if (Component) {
-      if (Component.childContextTypes) {
-        console.error(
-          '%s(...): childContextTypes cannot be defined on a function component.',
-          Component.displayName || Component.name || 'Component',
-        );
-      }
-    }
-    if (workInProgress.ref !== null) {
-      let info = '';
-      const ownerName = getCurrentFiberOwnerNameInDevOrNull();
-      if (ownerName) {
-        info += '\n\nCheck the render method of `' + ownerName + '`.';
-      }
-
-      let warningKey = ownerName || workInProgress._debugID || '';
-      const debugSource = workInProgress._debugSource;
-      if (debugSource) {
-        warningKey = debugSource.fileName + ':' + debugSource.lineNumber;
-      }
-      if (!didWarnAboutFunctionRefs[warningKey]) {
-        didWarnAboutFunctionRefs[warningKey] = true;
-        console.error(
-          'Function components cannot be given refs. ' +
-            'Attempts to access this ref will fail. ' +
-            'Did you mean to use React.forwardRef()?%s',
-          info,
-        );
-      }
-    }
-
-    if (
-      warnAboutDefaultPropsOnFunctionComponents &&
-      Component.defaultProps !== undefined
-    ) {
-      const componentName = getComponentName(Component) || 'Unknown';
-
-      if (!didWarnAboutDefaultPropsOnFunctionComponent[componentName]) {
-        console.error(
-          '%s: Support for defaultProps will be removed from function components ' +
-            'in a future major release. Use JavaScript default parameters instead.',
-          componentName,
-        );
-        didWarnAboutDefaultPropsOnFunctionComponent[componentName] = true;
-      }
-    }
-
-    if (typeof Component.getDerivedStateFromProps === 'function') {
-      const componentName = getComponentName(Component) || 'Unknown';
-
-      if (!didWarnAboutGetDerivedStateOnFunctionComponent[componentName]) {
-        console.error(
-          '%s: Function components do not support getDerivedStateFromProps.',
-          componentName,
-        );
-        didWarnAboutGetDerivedStateOnFunctionComponent[componentName] = true;
-      }
-    }
-
-    if (
-      typeof Component.contextType === 'object' &&
-      Component.contextType !== null
-    ) {
-      const componentName = getComponentName(Component) || 'Unknown';
-
-      if (!didWarnAboutContextTypeOnFunctionComponent[componentName]) {
-        console.error(
-          '%s: Function components do not support contextType.',
-          componentName,
-        );
-        didWarnAboutContextTypeOnFunctionComponent[componentName] = true;
-      }
-    }
   }
 }
 
@@ -1397,13 +1273,6 @@ function getRemainingWorkInPrimaryTree(current: Fiber, renderLanes) {
 
 function updateSuspenseComponent(current, workInProgress, renderLanes) {
   const nextProps = workInProgress.pendingProps;
-
-  // This is used by DevTools to force a boundary to suspend.
-  if (__DEV__) {
-    if (shouldSuspend(workInProgress)) {
-      workInProgress.flags |= DidCapture;
-    }
-  }
 
   let suspenseContext: SuspenseContext = suspenseStackCursor.current;
 
