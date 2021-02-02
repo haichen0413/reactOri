@@ -60,18 +60,7 @@ function lazyInitializer<T>(payload: Payload<T>): T {
       moduleObject => {
         if (payload._status === Pending) {
           const defaultExport = moduleObject.default;
-          if (__DEV__) {
-            if (defaultExport === undefined) {
-              console.error(
-                'lazy: Expected the result of a dynamic import() call. ' +
-                  'Instead received: %s\n\nYour code should look like: \n  ' +
-                  // Break up imports to avoid accidentally parsing them as dependencies.
-                  'const MyComponent = lazy(() => imp' +
-                  "ort('./MyComponent'))",
-                moduleObject,
-              );
-            }
-          }
+        
           // Transition to the next state.
           const resolved: ResolvedPayload<T> = (payload: any);
           resolved._status = Resolved;
