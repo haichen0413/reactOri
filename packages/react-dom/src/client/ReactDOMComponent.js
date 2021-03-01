@@ -354,14 +354,14 @@ export function createElement(
 
   // We create tags in the namespace of their parent container, except HTML
   // tags get no namespace.
-  const ownerDocument: Document = getOwnerDocumentFromRootContainer(
-    rootContainerElement,
-  );
+  const ownerDocument: Document = getOwnerDocumentFromRootContainer(rootContainerElement);
   let domElement: Element;
+
   let namespaceURI = parentNamespace;
   if (namespaceURI === HTML_NAMESPACE) {
     namespaceURI = getIntrinsicNamespace(type);
   }
+
   if (namespaceURI === HTML_NAMESPACE) {
     if (type === 'script') {
       // Create the script via .innerHTML so its "parser-inserted" flag is
@@ -777,13 +777,6 @@ export function updateProperties(
 }
 
 function getPossibleStandardName(propName: string): string | null {
-  if (__DEV__) {
-    const lowerCasedName = propName.toLowerCase();
-    if (!possibleStandardNames.hasOwnProperty(lowerCasedName)) {
-      return null;
-    }
-    return possibleStandardNames[lowerCasedName] || null;
-  }
   return null;
 }
 

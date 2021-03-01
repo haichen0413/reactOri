@@ -139,35 +139,13 @@ export function getHostProps(element: Element, props: Object) {
 }
 
 export function initWrapperState(element: Element, props: Object) {
-  const node = ((element: any): SelectWithWrapperState);
-  if (__DEV__) {
-    checkSelectPropTypes(props);
-  }
+  const node = element
 
-  node._wrapperState = {
-    wasMultiple: !!props.multiple,
-  };
-
-  if (__DEV__) {
-    if (
-      props.value !== undefined &&
-      props.defaultValue !== undefined &&
-      !didWarnValueDefaultValue
-    ) {
-      console.error(
-        'Select elements must be either controlled or uncontrolled ' +
-          '(specify either the value prop, or the defaultValue prop, but not ' +
-          'both). Decide between using a controlled or uncontrolled select ' +
-          'element and remove one of these props. More info: ' +
-          'https://reactjs.org/link/controlled-components',
-      );
-      didWarnValueDefaultValue = true;
-    }
-  }
+  node._wrapperState = {wasMultiple: !!props.multiple};
 }
 
 export function postMountWrapper(element: Element, props: Object) {
-  const node = ((element: any): SelectWithWrapperState);
+  const node = element
   node.multiple = !!props.multiple;
   const value = props.value;
   if (value != null) {
@@ -178,7 +156,7 @@ export function postMountWrapper(element: Element, props: Object) {
 }
 
 export function postUpdateWrapper(element: Element, props: Object) {
-  const node = ((element: any): SelectWithWrapperState);
+  const node = element
   const wasMultiple = node._wrapperState.wasMultiple;
   node._wrapperState.wasMultiple = !!props.multiple;
 
@@ -197,7 +175,7 @@ export function postUpdateWrapper(element: Element, props: Object) {
 }
 
 export function restoreControlledState(element: Element, props: Object) {
-  const node = ((element: any): SelectWithWrapperState);
+  const node = element
   const value = props.value;
 
   if (value != null) {

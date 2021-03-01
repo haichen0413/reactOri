@@ -49,7 +49,6 @@ import {
   findHostInstanceWithNoPortals,
   registerMutableSourceForHydration,
 } from 'react-reconciler/src/ReactFiberReconciler';
-import invariant from 'shared/invariant';
 import {
   BlockingRoot,
   ConcurrentRoot,
