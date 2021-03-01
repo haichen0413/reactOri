@@ -1853,31 +1853,14 @@ function commitRootImpl(root, renderPriorityLevel) {
     flushPassiveEffects();
   } while (rootWithPendingPassiveEffects !== null);
   flushRenderPhaseStrictModeWarningsInDEV();
-
-  invariant(
-    (executionContext & (RenderContext | CommitContext)) === NoContext,
-    'Should not already be working.',
-  );
-
   const finishedWork = root.finishedWork;
   const lanes = root.finishedLanes;
-
-  if (__DEV__) {
-    if (enableDebugTracing) {
-      logCommitStarted(lanes);
-    }
-  }
 
   if (enableSchedulingProfiler) {
     markCommitStarted(lanes);
   }
 
   if (finishedWork === null) {
-    if (__DEV__) {
-      if (enableDebugTracing) {
-        logCommitStopped();
-      }
-    }
 
     if (enableSchedulingProfiler) {
       markCommitStopped();
@@ -1887,12 +1870,6 @@ function commitRootImpl(root, renderPriorityLevel) {
   }
   root.finishedWork = null;
   root.finishedLanes = NoLanes;
-
-  invariant(
-    finishedWork !== root.current,
-    'Cannot commit the same tree as before. This error is likely caused by ' +
-      'a bug in React. Please file an issue.',
-  );
 
   // commitRoot never returns a continuation; it always finishes synchronously.
   // So we can clear these now to allow a new callback to be scheduled.
@@ -1970,22 +1947,12 @@ function commitRootImpl(root, renderPriorityLevel) {
 
     nextEffect = firstEffect;
     do {
-      if (__DEV__) {
-        invokeGuardedCallback(null, commitBeforeMutationEffects, null);
-        if (hasCaughtError()) {
-          invariant(nextEffect !== null, 'Should be working on an effect.');
-          const error = clearCaughtError();
-          captureCommitPhaseError(nextEffect, error);
-          nextEffect = nextEffect.nextEffect;
-        }
-      } else {
-        try {
-          commitBeforeMutationEffects();
-        } catch (error) {
-          invariant(nextEffect !== null, 'Should be working on an effect.');
-          captureCommitPhaseError(nextEffect, error);
-          nextEffect = nextEffect.nextEffect;
-        }
+      try {
+        commitBeforeMutationEffects();
+      } catch (error) {
+        invariant(nextEffect !== null, 'Should be working on an effect.');
+        captureCommitPhaseError(nextEffect, error);
+        nextEffect = nextEffect.nextEffect;
       }
     } while (nextEffect !== null);
 
@@ -2007,28 +1974,12 @@ function commitRootImpl(root, renderPriorityLevel) {
     // The next phase is the mutation phase, where we mutate the host tree.
     nextEffect = firstEffect;
     do {
-      if (__DEV__) {
-        invokeGuardedCallback(
-          null,
-          commitMutationEffects,
-          null,
-          root,
-          renderPriorityLevel,
-        );
-        if (hasCaughtError()) {
-          invariant(nextEffect !== null, 'Should be working on an effect.');
-          const error = clearCaughtError();
-          captureCommitPhaseError(nextEffect, error);
-          nextEffect = nextEffect.nextEffect;
-        }
-      } else {
-        try {
-          commitMutationEffects(root, renderPriorityLevel);
-        } catch (error) {
-          invariant(nextEffect !== null, 'Should be working on an effect.');
-          captureCommitPhaseError(nextEffect, error);
-          nextEffect = nextEffect.nextEffect;
-        }
+      try {
+        commitMutationEffects(root, renderPriorityLevel);
+      } catch (error) {
+        invariant(nextEffect !== null, 'Should be working on an effect.');
+        captureCommitPhaseError(nextEffect, error);
+        nextEffect = nextEffect.nextEffect;
       }
     } while (nextEffect !== null);
 
@@ -2048,22 +1999,12 @@ function commitRootImpl(root, renderPriorityLevel) {
     // layout, but class component lifecycles also fire here for legacy reasons.
     nextEffect = firstEffect;
     do {
-      if (__DEV__) {
-        invokeGuardedCallback(null, commitLayoutEffects, null, root, lanes);
-        if (hasCaughtError()) {
-          invariant(nextEffect !== null, 'Should be working on an effect.');
-          const error = clearCaughtError();
-          captureCommitPhaseError(nextEffect, error);
-          nextEffect = nextEffect.nextEffect;
-        }
-      } else {
-        try {
-          commitLayoutEffects(root, lanes);
-        } catch (error) {
-          invariant(nextEffect !== null, 'Should be working on an effect.');
-          captureCommitPhaseError(nextEffect, error);
-          nextEffect = nextEffect.nextEffect;
-        }
+      try {
+        commitLayoutEffects(root, lanes);
+      } catch (error) {
+        invariant(nextEffect !== null, 'Should be working on an effect.');
+        captureCommitPhaseError(nextEffect, error);
+        nextEffect = nextEffect.nextEffect;
       }
     } while (nextEffect !== null);
 
@@ -2175,10 +2116,6 @@ function commitRootImpl(root, renderPriorityLevel) {
 
   onCommitRootDevTools(finishedWork.stateNode, renderPriorityLevel);
 
-  if (__DEV__) {
-    onCommitRootTestSelector();
-  }
-
   // Always call this before exiting `commitRoot`, to ensure that any
   // additional work on this root is scheduled.
   ensureRootIsScheduled(root, now());
@@ -2191,12 +2128,6 @@ function commitRootImpl(root, renderPriorityLevel) {
   }
 
   if ((executionContext & LegacyUnbatchedContext) !== NoContext) {
-    if (__DEV__) {
-      if (enableDebugTracing) {
-        logCommitStopped();
-      }
-    }
-
     if (enableSchedulingProfiler) {
       markCommitStopped();
     }
@@ -2210,12 +2141,6 @@ function commitRootImpl(root, renderPriorityLevel) {
 
   // If layout work was scheduled, flush it now.
   flushSyncCallbackQueue();
-
-  if (__DEV__) {
-    if (enableDebugTracing) {
-      logCommitStopped();
-    }
-  }
 
   if (enableSchedulingProfiler) {
     markCommitStopped();
@@ -2379,11 +2304,6 @@ function commitMutationEffects(root: FiberRoot, renderPriorityLevel) {
 }
 
 function commitLayoutEffects(root: FiberRoot, committedLanes: Lanes) {
-  if (__DEV__) {
-    if (enableDebugTracing) {
-      logLayoutEffectsStarted(committedLanes);
-    }
-  }
 
   if (enableSchedulingProfiler) {
     markLayoutEffectsStarted(committedLanes);
@@ -2519,19 +2439,8 @@ function flushPassiveEffectsImpl() {
     (executionContext & (RenderContext | CommitContext)) === NoContext,
     'Cannot flush passive effects while already rendering.',
   );
-
-  if (__DEV__) {
-    if (enableDebugTracing) {
-      logPassiveEffectsStarted(lanes);
-    }
-  }
-
   if (enableSchedulingProfiler) {
     markPassiveEffectsStarted(lanes);
-  }
-
-  if (__DEV__) {
-    isFlushingPassiveEffects = true;
   }
 
   const prevExecutionContext = executionContext;
@@ -2554,54 +2463,25 @@ function flushPassiveEffectsImpl() {
     const destroy = effect.destroy;
     effect.destroy = undefined;
 
-    if (__DEV__) {
-      fiber.flags &= ~PassiveUnmountPendingDev;
-      const alternate = fiber.alternate;
-      if (alternate !== null) {
-        alternate.flags &= ~PassiveUnmountPendingDev;
-      }
-    }
-
     if (typeof destroy === 'function') {
-      if (__DEV__) {
-        setCurrentDebugFiberInDEV(fiber);
+      try {
         if (
           enableProfilerTimer &&
           enableProfilerCommitHooks &&
           fiber.mode & ProfileMode
         ) {
-          startPassiveEffectTimer();
-          invokeGuardedCallback(null, destroy, null);
-          recordPassiveEffectDuration(fiber);
-        } else {
-          invokeGuardedCallback(null, destroy, null);
-        }
-        if (hasCaughtError()) {
-          invariant(fiber !== null, 'Should be working on an effect.');
-          const error = clearCaughtError();
-          captureCommitPhaseError(fiber, error);
-        }
-        resetCurrentDebugFiberInDEV();
-      } else {
-        try {
-          if (
-            enableProfilerTimer &&
-            enableProfilerCommitHooks &&
-            fiber.mode & ProfileMode
-          ) {
-            try {
-              startPassiveEffectTimer();
-              destroy();
-            } finally {
-              recordPassiveEffectDuration(fiber);
-            }
-          } else {
+          try {
+            startPassiveEffectTimer();
             destroy();
+          } finally {
+            recordPassiveEffectDuration(fiber);
           }
-        } catch (error) {
-          invariant(fiber !== null, 'Should be working on an effect.');
-          captureCommitPhaseError(fiber, error);
+        } else {
+          destroy();
         }
+      } catch (error) {
+        invariant(fiber !== null, 'Should be working on an effect.');
+        captureCommitPhaseError(fiber, error);
       }
     }
   }
@@ -2611,46 +2491,25 @@ function flushPassiveEffectsImpl() {
   for (let i = 0; i < mountEffects.length; i += 2) {
     const effect = ((mountEffects[i]: any): HookEffect);
     const fiber = ((mountEffects[i + 1]: any): Fiber);
-    if (__DEV__) {
-      setCurrentDebugFiberInDEV(fiber);
+    try {
+      const create = effect.create;
       if (
         enableProfilerTimer &&
         enableProfilerCommitHooks &&
         fiber.mode & ProfileMode
       ) {
-        startPassiveEffectTimer();
-        invokeGuardedCallback(null, invokePassiveEffectCreate, null, effect);
-        recordPassiveEffectDuration(fiber);
-      } else {
-        invokeGuardedCallback(null, invokePassiveEffectCreate, null, effect);
-      }
-      if (hasCaughtError()) {
-        invariant(fiber !== null, 'Should be working on an effect.');
-        const error = clearCaughtError();
-        captureCommitPhaseError(fiber, error);
-      }
-      resetCurrentDebugFiberInDEV();
-    } else {
-      try {
-        const create = effect.create;
-        if (
-          enableProfilerTimer &&
-          enableProfilerCommitHooks &&
-          fiber.mode & ProfileMode
-        ) {
-          try {
-            startPassiveEffectTimer();
-            effect.destroy = create();
-          } finally {
-            recordPassiveEffectDuration(fiber);
-          }
-        } else {
+        try {
+          startPassiveEffectTimer();
           effect.destroy = create();
+        } finally {
+          recordPassiveEffectDuration(fiber);
         }
-      } catch (error) {
-        invariant(fiber !== null, 'Should be working on an effect.');
-        captureCommitPhaseError(fiber, error);
+      } else {
+        effect.destroy = create();
       }
+    } catch (error) {
+      invariant(fiber !== null, 'Should be working on an effect.');
+      captureCommitPhaseError(fiber, error);
     }
   }
 
@@ -2680,16 +2539,6 @@ function flushPassiveEffectsImpl() {
   if (enableSchedulerTracing) {
     popInteractions(((prevInteractions: any): Set<Interaction>));
     finishPendingInteractions(root, lanes);
-  }
-
-  if (__DEV__) {
-    isFlushingPassiveEffects = false;
-  }
-
-  if (__DEV__) {
-    if (enableDebugTracing) {
-      logPassiveEffectsStopped();
-    }
   }
 
   if (enableSchedulingProfiler) {
@@ -2787,22 +2636,6 @@ export function captureCommitPhaseError(sourceFiber: Fiber, error: mixed) {
       }
     }
     fiber = fiber.return;
-  }
-
-  if (__DEV__) {
-    // TODO: Until we re-land skipUnmountedBoundaries (see #20147), this warning
-    // will fire for errors that are thrown by destroy functions inside deleted
-    // trees. What it should instead do is propagate the error to the parent of
-    // the deleted tree. In the meantime, do not add this warning to the
-    // allowlist; this is only for our internal use.
-    console.error(
-      'Internal React error: Attempted to capture a commit phase error ' +
-        'inside a detached tree. This indicates a bug in React. Likely ' +
-        'causes include deleting the same fiber more than once, committing an ' +
-        'already-finished tree, or an inconsistent return pointer.\n\n' +
-        'Error message:\n\n%s',
-      error,
-    );
   }
 }
 
@@ -2947,25 +2780,6 @@ function checkForNestedUpdates() {
   if (nestedUpdateCount > NESTED_UPDATE_LIMIT) {
     nestedUpdateCount = 0;
     rootWithNestedUpdates = null;
-    invariant(
-      false,
-      'Maximum update depth exceeded. This can happen when a component ' +
-        'repeatedly calls setState inside componentWillUpdate or ' +
-        'componentDidUpdate. React limits the number of nested updates to ' +
-        'prevent infinite loops.',
-    );
-  }
-
-  if (__DEV__) {
-    if (nestedPassiveUpdateCount > NESTED_PASSIVE_UPDATE_LIMIT) {
-      nestedPassiveUpdateCount = 0;
-      console.error(
-        'Maximum update depth exceeded. This can happen when a component ' +
-          "calls setState inside useEffect, but useEffect either doesn't " +
-          'have a dependency array, or one of the dependencies changes on ' +
-          'every render.',
-      );
-    }
   }
 }
 
@@ -2979,356 +2793,13 @@ function flushRenderPhaseStrictModeWarningsInDEV() {
   }
 }
 
-let didWarnStateUpdateForNotYetMountedComponent: Set<string> | null = null;
-function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
-  if (__DEV__) {
-    if ((executionContext & RenderContext) !== NoContext) {
-      // We let the other warning about render phase updates deal with this one.
-      return;
-    }
-
-    if (!(fiber.mode & (BlockingMode | ConcurrentMode))) {
-      return;
-    }
-
-    const tag = fiber.tag;
-    if (
-      tag !== IndeterminateComponent &&
-      tag !== HostRoot &&
-      tag !== ClassComponent &&
-      tag !== FunctionComponent &&
-      tag !== ForwardRef &&
-      tag !== MemoComponent &&
-      tag !== SimpleMemoComponent
-    ) {
-      // Only warn for user-defined components, not internal ones like Suspense.
-      return;
-    }
-
-    // We show the whole stack but dedupe on the top component's name because
-    // the problematic code almost always lies inside that component.
-    const componentName = getComponentName(fiber.type) || 'ReactComponent';
-    if (didWarnStateUpdateForNotYetMountedComponent !== null) {
-      if (didWarnStateUpdateForNotYetMountedComponent.has(componentName)) {
-        return;
-      }
-      didWarnStateUpdateForNotYetMountedComponent.add(componentName);
-    } else {
-      didWarnStateUpdateForNotYetMountedComponent = new Set([componentName]);
-    }
-
-    const previousFiber = ReactCurrentFiberCurrent;
-    try {
-      setCurrentDebugFiberInDEV(fiber);
-      console.error(
-        "Can't perform a React state update on a component that hasn't mounted yet. " +
-          'This indicates that you have a side-effect in your render function that ' +
-          'asynchronously later calls tries to update the component. Move this work to ' +
-          'useEffect instead.',
-      );
-    } finally {
-      if (previousFiber) {
-        setCurrentDebugFiberInDEV(fiber);
-      } else {
-        resetCurrentDebugFiberInDEV();
-      }
-    }
-  }
-}
-
-let didWarnStateUpdateForUnmountedComponent: Set<string> | null = null;
-function warnAboutUpdateOnUnmountedFiberInDEV(fiber) {
-  if (__DEV__) {
-    const tag = fiber.tag;
-    if (
-      tag !== HostRoot &&
-      tag !== ClassComponent &&
-      tag !== FunctionComponent &&
-      tag !== ForwardRef &&
-      tag !== MemoComponent &&
-      tag !== SimpleMemoComponent
-    ) {
-      // Only warn for user-defined components, not internal ones like Suspense.
-      return;
-    }
-
-    // If there are pending passive effects unmounts for this Fiber,
-    // we can assume that they would have prevented this update.
-    if ((fiber.flags & PassiveUnmountPendingDev) !== NoFlags) {
-      return;
-    }
-
-    // We show the whole stack but dedupe on the top component's name because
-    // the problematic code almost always lies inside that component.
-    const componentName = getComponentName(fiber.type) || 'ReactComponent';
-    if (didWarnStateUpdateForUnmountedComponent !== null) {
-      if (didWarnStateUpdateForUnmountedComponent.has(componentName)) {
-        return;
-      }
-      didWarnStateUpdateForUnmountedComponent.add(componentName);
-    } else {
-      didWarnStateUpdateForUnmountedComponent = new Set([componentName]);
-    }
-
-    if (isFlushingPassiveEffects) {
-      // Do not warn if we are currently flushing passive effects!
-      //
-      // React can't directly detect a memory leak, but there are some clues that warn about one.
-      // One of these clues is when an unmounted React component tries to update its state.
-      // For example, if a component forgets to remove an event listener when unmounting,
-      // that listener may be called later and try to update state,
-      // at which point React would warn about the potential leak.
-      //
-      // Warning signals are the most useful when they're strong.
-      // (So we should avoid false positive warnings.)
-      // Updating state from within an effect cleanup function is sometimes a necessary pattern, e.g.:
-      // 1. Updating an ancestor that a component had registered itself with on mount.
-      // 2. Resetting state when a component is hidden after going offscreen.
-    } else {
-      const previousFiber = ReactCurrentFiberCurrent;
-      try {
-        setCurrentDebugFiberInDEV(fiber);
-        console.error(
-          "Can't perform a React state update on an unmounted component. This " +
-            'is a no-op, but it indicates a memory leak in your application. To ' +
-            'fix, cancel all subscriptions and asynchronous tasks in %s.',
-          tag === ClassComponent
-            ? 'the componentWillUnmount method'
-            : 'a useEffect cleanup function',
-        );
-      } finally {
-        if (previousFiber) {
-          setCurrentDebugFiberInDEV(fiber);
-        } else {
-          resetCurrentDebugFiberInDEV();
-        }
-      }
-    }
-  }
-}
-
 let beginWork;
-if (__DEV__ && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
-  const dummyFiber = null;
-  beginWork = (current, unitOfWork, lanes) => {
-    // If a component throws an error, we replay it again in a synchronously
-    // dispatched event, so that the debugger will treat it as an uncaught
-    // error See ReactErrorUtils for more information.
-
-    // Before entering the begin phase, copy the work-in-progress onto a dummy
-    // fiber. If beginWork throws, we'll use this to reset the state.
-    const originalWorkInProgressCopy = assignFiberPropertiesInDEV(
-      dummyFiber,
-      unitOfWork,
-    );
-    try {
-      return originalBeginWork(current, unitOfWork, lanes);
-    } catch (originalError) {
-      if (
-        originalError !== null &&
-        typeof originalError === 'object' &&
-        typeof originalError.then === 'function'
-      ) {
-        // Don't replay promises. Treat everything else like an error.
-        throw originalError;
-      }
-
-      // Keep this code in sync with handleError; any changes here must have
-      // corresponding changes there.
-      resetContextDependencies();
-      resetHooksAfterThrow();
-      // Don't reset current debug fiber, since we're about to work on the
-      // same fiber again.
-
-      // Unwind the failed stack frame
-      unwindInterruptedWork(unitOfWork);
-
-      // Restore the original properties of the fiber.
-      assignFiberPropertiesInDEV(unitOfWork, originalWorkInProgressCopy);
-
-      if (enableProfilerTimer && unitOfWork.mode & ProfileMode) {
-        // Reset the profiler timer.
-        startProfilerTimer(unitOfWork);
-      }
-
-      // Run beginWork again.
-      invokeGuardedCallback(
-        null,
-        originalBeginWork,
-        null,
-        current,
-        unitOfWork,
-        lanes,
-      );
-
-      if (hasCaughtError()) {
-        const replayError = clearCaughtError();
-        // `invokeGuardedCallback` sometimes sets an expando `_suppressLogging`.
-        // Rethrow this error instead of the original one.
-        throw replayError;
-      } else {
-        // This branch is reachable if the render phase is impure.
-        throw originalError;
-      }
-    }
-  };
-} else {
-  beginWork = originalBeginWork;
-}
+beginWork = originalBeginWork;
 
 let didWarnAboutUpdateInRender = false;
-let didWarnAboutUpdateInRenderForAnotherComponent;
-if (__DEV__) {
-  didWarnAboutUpdateInRenderForAnotherComponent = new Set();
-}
-
-function warnAboutRenderPhaseUpdatesInDEV(fiber) {
-  if (__DEV__) {
-    if (
-      ReactCurrentDebugFiberIsRenderingInDEV &&
-      (executionContext & RenderContext) !== NoContext &&
-      !getIsUpdatingOpaqueValueInRenderPhaseInDEV()
-    ) {
-      switch (fiber.tag) {
-        case FunctionComponent:
-        case ForwardRef:
-        case SimpleMemoComponent: {
-          const renderingComponentName =
-            (workInProgress && getComponentName(workInProgress.type)) ||
-            'Unknown';
-          // Dedupe by the rendering component because it's the one that needs to be fixed.
-          const dedupeKey = renderingComponentName;
-          if (!didWarnAboutUpdateInRenderForAnotherComponent.has(dedupeKey)) {
-            didWarnAboutUpdateInRenderForAnotherComponent.add(dedupeKey);
-            const setStateComponentName =
-              getComponentName(fiber.type) || 'Unknown';
-            console.error(
-              'Cannot update a component (`%s`) while rendering a ' +
-                'different component (`%s`). To locate the bad setState() call inside `%s`, ' +
-                'follow the stack trace as described in https://reactjs.org/link/setstate-in-render',
-              setStateComponentName,
-              renderingComponentName,
-              renderingComponentName,
-            );
-          }
-          break;
-        }
-        case ClassComponent: {
-          if (!didWarnAboutUpdateInRender) {
-            console.error(
-              'Cannot update during an existing state transition (such as ' +
-                'within `render`). Render methods should be a pure ' +
-                'function of props and state.',
-            );
-            didWarnAboutUpdateInRender = true;
-          }
-          break;
-        }
-      }
-    }
-  }
-}
 
 // a 'shared' variable that changes when act() opens/closes in tests.
 export const IsThisRendererActing = {current: (false: boolean)};
-
-export function warnIfNotScopedWithMatchingAct(fiber: Fiber): void {
-  if (__DEV__) {
-    if (
-      warnsIfNotActing === true &&
-      IsSomeRendererActing.current === true &&
-      IsThisRendererActing.current !== true
-    ) {
-      const previousFiber = ReactCurrentFiberCurrent;
-      try {
-        setCurrentDebugFiberInDEV(fiber);
-        console.error(
-          "It looks like you're using the wrong act() around your test interactions.\n" +
-            'Be sure to use the matching version of act() corresponding to your renderer:\n\n' +
-            '// for react-dom:\n' +
-            // Break up imports to avoid accidentally parsing them as dependencies.
-            'import {act} fr' +
-            "om 'react-dom/test-utils';\n" +
-            '// ...\n' +
-            'act(() => ...);\n\n' +
-            '// for react-test-renderer:\n' +
-            // Break up imports to avoid accidentally parsing them as dependencies.
-            'import TestRenderer fr' +
-            "om react-test-renderer';\n" +
-            'const {act} = TestRenderer;\n' +
-            '// ...\n' +
-            'act(() => ...);',
-        );
-      } finally {
-        if (previousFiber) {
-          setCurrentDebugFiberInDEV(fiber);
-        } else {
-          resetCurrentDebugFiberInDEV();
-        }
-      }
-    }
-  }
-}
-
-export function warnIfNotCurrentlyActingEffectsInDEV(fiber: Fiber): void {
-  if (__DEV__) {
-    if (
-      warnsIfNotActing === true &&
-      (fiber.mode & StrictMode) !== NoMode &&
-      IsSomeRendererActing.current === false &&
-      IsThisRendererActing.current === false
-    ) {
-      console.error(
-        'An update to %s ran an effect, but was not wrapped in act(...).\n\n' +
-          'When testing, code that causes React state updates should be ' +
-          'wrapped into act(...):\n\n' +
-          'act(() => {\n' +
-          '  /* fire events that update state */\n' +
-          '});\n' +
-          '/* assert on the output */\n\n' +
-          "This ensures that you're testing the behavior the user would see " +
-          'in the browser.' +
-          ' Learn more at https://reactjs.org/link/wrap-tests-with-act',
-        getComponentName(fiber.type),
-      );
-    }
-  }
-}
-
-function warnIfNotCurrentlyActingUpdatesInDEV(fiber: Fiber): void {
-  if (__DEV__) {
-    if (
-      warnsIfNotActing === true &&
-      executionContext === NoContext &&
-      IsSomeRendererActing.current === false &&
-      IsThisRendererActing.current === false
-    ) {
-      const previousFiber = ReactCurrentFiberCurrent;
-      try {
-        setCurrentDebugFiberInDEV(fiber);
-        console.error(
-          'An update to %s inside a test was not wrapped in act(...).\n\n' +
-            'When testing, code that causes React state updates should be ' +
-            'wrapped into act(...):\n\n' +
-            'act(() => {\n' +
-            '  /* fire events that update state */\n' +
-            '});\n' +
-            '/* assert on the output */\n\n' +
-            "This ensures that you're testing the behavior the user would see " +
-            'in the browser.' +
-            ' Learn more at https://reactjs.org/link/wrap-tests-with-act',
-          getComponentName(fiber.type),
-        );
-      } finally {
-        if (previousFiber) {
-          setCurrentDebugFiberInDEV(fiber);
-        } else {
-          resetCurrentDebugFiberInDEV();
-        }
-      }
-    }
-  }
-}
 
 export const warnIfNotCurrentlyActingUpdatesInDev = warnIfNotCurrentlyActingUpdatesInDEV;
 
@@ -3338,39 +2809,6 @@ let didWarnAboutUnmockedScheduler = false;
 // scheduler is the actual recommendation. The alternative could be a testing build,
 // a new lib, or whatever; we dunno just yet. This message is for early adopters
 // to get their tests right.
-
-export function warnIfUnmockedScheduler(fiber: Fiber) {
-  if (__DEV__) {
-    if (
-      didWarnAboutUnmockedScheduler === false &&
-      Scheduler.unstable_flushAllWithoutAsserting === undefined
-    ) {
-      if (fiber.mode & BlockingMode || fiber.mode & ConcurrentMode) {
-        didWarnAboutUnmockedScheduler = true;
-        console.error(
-          'In Concurrent or Sync modes, the "scheduler" module needs to be mocked ' +
-            'to guarantee consistent behaviour across tests and browsers. ' +
-            'For example, with jest: \n' +
-            // Break up requires to avoid accidentally parsing them as dependencies.
-            "jest.mock('scheduler', () => require" +
-            "('scheduler/unstable_mock'));\n\n" +
-            'For more info, visit https://reactjs.org/link/mock-scheduler',
-        );
-      } else if (warnAboutUnmockedScheduler === true) {
-        didWarnAboutUnmockedScheduler = true;
-        console.error(
-          'Starting from React v18, the "scheduler" module will need to be mocked ' +
-            'to guarantee consistent behaviour across tests and browsers. ' +
-            'For example, with jest: \n' +
-            // Break up requires to avoid accidentally parsing them as dependencies.
-            "jest.mock('scheduler', () => require" +
-            "('scheduler/unstable_mock'));\n\n" +
-            'For more info, visit https://reactjs.org/link/mock-scheduler',
-        );
-      }
-    }
-  }
-}
 
 function computeThreadID(root: FiberRoot, lane: Lane | Lanes) {
   // Interaction threads are unique per root and expiration time.
@@ -3625,15 +3063,6 @@ export function act(callback: () => Thenable<mixed>): Thenable<void> {
     IsSomeRendererActing.current = previousIsSomeRendererActing;
     IsThisRendererActing.current = previousIsThisRendererActing;
     isInsideThisAct = previousIsInsideThisAct;
-    if (__DEV__) {
-      if (actingUpdatesScopeDepth > previousActingUpdatesScopeDepth) {
-        // if it's _less than_ previousActingUpdatesScopeDepth, then we can assume the 'other' one has warned
-        console.error(
-          'You seem to have overlapping act() calls, this is not supported. ' +
-            'Be sure to await previous act() calls before making a new one. ',
-        );
-      }
-    }
   }
 
   let result;
@@ -3653,22 +3082,6 @@ export function act(callback: () => Thenable<mixed>): Thenable<void> {
     // setup a boolean that gets set to true only
     // once this act() call is await-ed
     let called = false;
-    if (__DEV__) {
-      if (typeof Promise !== 'undefined') {
-        //eslint-disable-next-line no-undef
-        Promise.resolve()
-          .then(() => {})
-          .then(() => {
-            if (called === false) {
-              console.error(
-                'You called act(async () => ...) without await. ' +
-                  'This could lead to unexpected testing behaviour, interleaving multiple act ' +
-                  'calls and mixing their scopes. You should - await act(async () => ...);',
-              );
-            }
-          });
-      }
-    }
 
     // in the async case, the returned thenable runs the callback, flushes
     // effects and  microtasks in a loop until flushPassiveEffects() === false,
@@ -3706,16 +3119,6 @@ export function act(callback: () => Thenable<mixed>): Thenable<void> {
       },
     };
   } else {
-    if (__DEV__) {
-      if (result !== undefined) {
-        console.error(
-          'The callback passed to act(...) function ' +
-            'must return undefined, or a Promise. You returned %s',
-          result,
-        );
-      }
-    }
-
     // flush effects until none remain, and cleanup
     try {
       if (
@@ -3735,11 +3138,6 @@ export function act(callback: () => Thenable<mixed>): Thenable<void> {
     // in the sync case, the returned thenable only warns *if* await-ed
     return {
       then(resolve) {
-        if (__DEV__) {
-          console.error(
-            'Do not await the result of calling act(...) with sync logic, it is not a Promise.',
-          );
-        }
         resolve();
       },
     };

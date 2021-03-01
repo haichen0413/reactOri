@@ -349,20 +349,7 @@ function getStateFromUpdate<State>(
           enterDisallowedContextReadInDEV();
         }
         partialState = payload.call(instance, prevState, nextProps);
-        if (__DEV__) {
-          if (
-            debugRenderPhaseSideEffectsForStrictMode &&
-            workInProgress.mode & StrictMode
-          ) {
-            disableLogs();
-            try {
-              payload.call(instance, prevState, nextProps);
-            } finally {
-              reenableLogs();
-            }
-          }
-          exitDisallowedContextReadInDEV();
-        }
+        
       } else {
         // Partial state object
         partialState = payload;
@@ -556,19 +543,9 @@ export function processUpdateQueue<State>(
     workInProgress.lanes = newLanes;
     workInProgress.memoizedState = newState;
   }
-
-  if (__DEV__) {
-    currentlyProcessingQueue = null;
-  }
 }
 
 function callCallback(callback, context) {
-  invariant(
-    typeof callback === 'function',
-    'Invalid argument passed as callback. Expected a function. Instead ' +
-      'received: %s',
-    callback,
-  );
   callback.call(context);
 }
 
