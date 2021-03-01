@@ -107,6 +107,12 @@ export function createEventListenerWrapper(
   );
 }
 
+/**
+ * 创建具有优先级的事件侦听器包装器
+ * @param {*} targetContainer 
+ * @param {*} domEventName 
+ * @param {*} eventSystemFlags 
+ */
 export function createEventListenerWrapperWithPriority(
   targetContainer: EventTarget,
   domEventName: DOMEventName,

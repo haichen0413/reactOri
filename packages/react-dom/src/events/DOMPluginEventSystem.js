@@ -91,6 +91,7 @@ ChangeEventPlugin.registerEvents();
 SelectEventPlugin.registerEvents();
 BeforeInputEventPlugin.registerEvents();
 
+// 提取事件
 function extractEvents(
   dispatchQueue: DispatchQueue,
   domEventName: DOMEventName,
@@ -291,19 +292,15 @@ function dispatchEventsForPlugins(
   processDispatchQueue(dispatchQueue, eventSystemFlags);
 }
 
+/**
+ * 监听非委托事件
+ * @param {}} domEventName 
+ * @param {*} targetElement 
+ */
 export function listenToNonDelegatedEvent(
   domEventName: DOMEventName,
   targetElement: Element,
 ): void {
-  if (__DEV__) {
-    if (!nonDelegatedEvents.has(domEventName)) {
-      console.error(
-        'Did not expect a listenToNonDelegatedEvent() call for "%s". ' +
-          'This is a bug in React. Please file an issue.',
-        domEventName,
-      );
-    }
-  }
   const isCapturePhaseListener = false;
   const listenerSet = getEventListenerSet(targetElement);
   const listenerSetKey = getListenerSetKey(
@@ -326,15 +323,6 @@ export function listenToNativeEvent(
   isCapturePhaseListener: boolean,
   target: EventTarget,
 ): void {
-  if (__DEV__) {
-    if (nonDelegatedEvents.has(domEventName) && !isCapturePhaseListener) {
-      console.error(
-        'Did not expect a listenToNativeEvent() call for "%s" in the bubble phase. ' +
-          'This is a bug in React. Please file an issue.',
-        domEventName,
-      );
-    }
-  }
 
   let eventSystemFlags = 0;
   if (isCapturePhaseListener) {
@@ -543,7 +531,7 @@ export function dispatchEventForPluginEventSystem(
     (eventSystemFlags & IS_EVENT_HANDLE_NON_MANAGED_NODE) === 0 &&
     (eventSystemFlags & IS_NON_DELEGATED) === 0
   ) {
-    const targetContainerNode = ((targetContainer: any): Node);
+    const targetContainerNode = targetContainer
 
     // If we are using the legacy FB support flag, we
     // defer the event to the null with a one

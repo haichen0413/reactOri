@@ -167,8 +167,8 @@ function registerSimplePluginEventsAndSetTheirPriorities(
   // if we only use three arrays to process all the categories of
   // instead of tuples.
   for (let i = 0; i < eventTypes.length; i += 2) {
-    const topEvent = ((eventTypes[i]: any): DOMEventName);
-    const event = ((eventTypes[i + 1]: any): string);
+    const topEvent = eventTypes[i]
+    const event = eventTypes[i + 1]
     const capitalizedEvent = event[0].toUpperCase() + event.slice(1);
     const reactName = 'on' + capitalizedEvent;
     eventPriorities.set(topEvent, priority);
@@ -177,6 +177,11 @@ function registerSimplePluginEventsAndSetTheirPriorities(
   }
 }
 
+/**
+ * 设置事件优先级
+ * @param {*} eventTypes 
+ * @param {*} priority 
+ */
 function setEventPriorities(
   eventTypes: Array<DOMEventName>,
   priority: EventPriority,
@@ -202,13 +207,6 @@ export function getEventPriorityForListenerSystem(
   const priority = eventPriorities.get(type);
   if (priority !== undefined) {
     return priority;
-  }
-  if (__DEV__) {
-    console.warn(
-      'The event "%s" provided to createEventHandle() does not have a known priority type.' +
-        ' This is likely a bug in React.',
-      type,
-    );
   }
   return ContinuousEvent;
 }
