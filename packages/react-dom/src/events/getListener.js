@@ -67,11 +67,5 @@ export default function getListener(
   if (shouldPreventMouseEvent(registrationName, inst.type, props)) {
     return null;
   }
-  invariant(
-    !listener || typeof listener === 'function',
-    'Expected `%s` listener to be a function, instead got a value of `%s` type.',
-    registrationName,
-    typeof listener,
-  );
   return listener;
 }

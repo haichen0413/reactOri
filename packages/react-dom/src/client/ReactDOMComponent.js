@@ -280,13 +280,6 @@ function setInitialDOMProperties(
     }
     const nextProp = nextProps[propKey];
     if (propKey === STYLE) {
-      if (__DEV__) {
-        if (nextProp) {
-          // Freeze the next style object so that we can assume it won't be
-          // mutated. We have already warned for this in the past.
-          Object.freeze(nextProp);
-        }
-      }
       // Relies on `updateStylesByID` not mutating `styleUpdates`.
       setValueForStyles(domElement, nextProp);
     } else if (propKey === DANGEROUSLY_SET_INNER_HTML) {
@@ -319,9 +312,6 @@ function setInitialDOMProperties(
       // on server rendering (but we *do* want to emit it in SSR).
     } else if (registrationNameDependencies.hasOwnProperty(propKey)) {
       if (nextProp != null) {
-        if (__DEV__ && typeof nextProp !== 'function') {
-          warnForInvalidEventListener(propKey, nextProp);
-        }
         if (propKey === 'onScroll') {
           listenToNonDelegatedEvent('scroll', domElement);
         }
