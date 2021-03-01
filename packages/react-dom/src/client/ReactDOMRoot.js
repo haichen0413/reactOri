@@ -72,41 +72,10 @@ ReactDOMRoot.prototype.render = ReactDOMBlockingRoot.prototype.render = function
   children: ReactNodeList,
 ): void {
   const root = this._internalRoot;
-  if (__DEV__) {
-    if (typeof arguments[1] === 'function') {
-      console.error(
-        'render(...): does not support the second callback argument. ' +
-          'To execute a side effect after rendering, declare it in a component body with useEffect().',
-      );
-    }
-    const container = root.containerInfo;
-
-    if (container.nodeType !== COMMENT_NODE) {
-      const hostInstance = findHostInstanceWithNoPortals(root.current);
-      if (hostInstance) {
-        if (hostInstance.parentNode !== container) {
-          console.error(
-            'render(...): It looks like the React-rendered content of the ' +
-              'root container was removed without using React. This is not ' +
-              'supported and will cause errors. Instead, call ' +
-              "root.unmount() to empty a root's container.",
-          );
-        }
-      }
-    }
-  }
   updateContainer(children, root, null, null);
 };
 
 ReactDOMRoot.prototype.unmount = ReactDOMBlockingRoot.prototype.unmount = function(): void {
-  if (__DEV__) {
-    if (typeof arguments[0] === 'function') {
-      console.error(
-        'unmount(...): does not support a callback argument. ' +
-          'To execute a side effect after rendering, declare it in a component body with useEffect().',
-      );
-    }
-  }
   const root = this._internalRoot;
   const container = root.containerInfo;
   updateContainer(null, root, null, () => {
@@ -149,11 +118,6 @@ export function createRoot(
   container: Container,
   options?: RootOptions,
 ): RootType {
-  invariant(
-    isValidContainer(container),
-    'createRoot(...): Target container is not a DOM element.',
-  );
-  warnIfReactDOMContainerInDEV(container);
   return new ReactDOMRoot(container, options);
 }
 
@@ -161,11 +125,6 @@ export function createBlockingRoot(
   container: Container,
   options?: RootOptions,
 ): RootType {
-  invariant(
-    isValidContainer(container),
-    'createRoot(...): Target container is not a DOM element.',
-  );
-  warnIfReactDOMContainerInDEV(container);
   return new ReactDOMBlockingRoot(container, BlockingRoot, options);
 }
 
@@ -185,36 +144,4 @@ export function isValidContainer(node: mixed): boolean {
       (node.nodeType === COMMENT_NODE &&
         (node: any).nodeValue === ' react-mount-point-unstable '))
   );
-}
-
-function warnIfReactDOMContainerInDEV(container) {
-  if (__DEV__) {
-    if (
-      container.nodeType === ELEMENT_NODE &&
-      ((container: any): Element).tagName &&
-      ((container: any): Element).tagName.toUpperCase() === 'BODY'
-    ) {
-      console.error(
-        'createRoot(): Creating roots directly with document.body is ' +
-          'discouraged, since its children are often manipulated by third-party ' +
-          'scripts and browser extensions. This may lead to subtle ' +
-          'reconciliation issues. Try using a container element created ' +
-          'for your app.',
-      );
-    }
-    if (isContainerMarkedAsRoot(container)) {
-      if (container._reactRootContainer) {
-        console.error(
-          'You are calling ReactDOM.createRoot() on a container that was previously ' +
-            'passed to ReactDOM.render(). This is not supported.',
-        );
-      } else {
-        console.error(
-          'You are calling ReactDOM.createRoot() on a container that ' +
-            'has already been passed to createRoot() before. Instead, call ' +
-            'root.render() on the existing root instead if you want to update it.',
-        );
-      }
-    }
-  }
 }

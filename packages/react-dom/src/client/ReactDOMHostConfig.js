@@ -136,9 +136,6 @@ type SelectionInformation = {|
 |};
 
 let SUPPRESS_HYDRATION_WARNING;
-if (__DEV__) {
-  SUPPRESS_HYDRATION_WARNING = 'suppressHydrationWarning';
-}
 
 const SUSPENSE_START_DATA = '$';
 const SUSPENSE_END_DATA = '/$';
@@ -187,11 +184,6 @@ export function getRootHostContext(
       namespace = getChildNamespace(ownNamespace, type);
       break;
     }
-  }
-  if (__DEV__) {
-    const validatedTag = type.toLowerCase();
-    const ancestorInfo = updatedAncestorInfo(null, validatedTag);
-    return {namespace, ancestorInfo};
   }
   return namespace;
 }
@@ -305,21 +297,6 @@ export function prepareUpdate(
   rootContainerInstance: Container,
   hostContext: HostContext,
 ): null | Array<mixed> {
-  if (__DEV__) {
-    const hostContextDev = ((hostContext: any): HostContextDev);
-    if (
-      typeof newProps.children !== typeof oldProps.children &&
-      (typeof newProps.children === 'string' ||
-        typeof newProps.children === 'number')
-    ) {
-      const string = '' + newProps.children;
-      const ownAncestorInfo = updatedAncestorInfo(
-        hostContextDev.ancestorInfo,
-        type,
-      );
-      validateDOMNesting(null, string, ownAncestorInfo);
-    }
-  }
   return diffProperties(
     domElement,
     type,
@@ -731,12 +708,8 @@ export function hydrateInstance(
   // get attached.
   updateFiberProps(instance, props);
   let parentNamespace: string;
-  if (__DEV__) {
-    const hostContextDev = ((hostContext: any): HostContextDev);
-    parentNamespace = hostContextDev.namespace;
-  } else {
-    parentNamespace = ((hostContext: any): HostContextProd);
-  }
+  parentNamespace = ((hostContext: any): HostContextProd);
+  
   return diffHydratedProperties(
     instance,
     type,
@@ -836,120 +809,6 @@ export function commitHydratedSuspenseInstance(
 ): void {
   // Retry if any event replaying was blocked on this.
   retryIfBlockedOn(suspenseInstance);
-}
-
-export function didNotMatchHydratedContainerTextInstance(
-  parentContainer: Container,
-  textInstance: TextInstance,
-  text: string,
-) {
-  if (__DEV__) {
-    warnForUnmatchedText(textInstance, text);
-  }
-}
-
-export function didNotMatchHydratedTextInstance(
-  parentType: string,
-  parentProps: Props,
-  parentInstance: Instance,
-  textInstance: TextInstance,
-  text: string,
-) {
-  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
-    warnForUnmatchedText(textInstance, text);
-  }
-}
-
-export function didNotHydrateContainerInstance(
-  parentContainer: Container,
-  instance: HydratableInstance,
-) {
-  if (__DEV__) {
-    if (instance.nodeType === ELEMENT_NODE) {
-      warnForDeletedHydratableElement(parentContainer, (instance: any));
-    } else if (instance.nodeType === COMMENT_NODE) {
-      // TODO: warnForDeletedHydratableSuspenseBoundary
-    } else {
-      warnForDeletedHydratableText(parentContainer, (instance: any));
-    }
-  }
-}
-
-export function didNotHydrateInstance(
-  parentType: string,
-  parentProps: Props,
-  parentInstance: Instance,
-  instance: HydratableInstance,
-) {
-  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
-    if (instance.nodeType === ELEMENT_NODE) {
-      warnForDeletedHydratableElement(parentInstance, (instance: any));
-    } else if (instance.nodeType === COMMENT_NODE) {
-      // TODO: warnForDeletedHydratableSuspenseBoundary
-    } else {
-      warnForDeletedHydratableText(parentInstance, (instance: any));
-    }
-  }
-}
-
-export function didNotFindHydratableContainerInstance(
-  parentContainer: Container,
-  type: string,
-  props: Props,
-) {
-  if (__DEV__) {
-    warnForInsertedHydratedElement(parentContainer, type, props);
-  }
-}
-
-export function didNotFindHydratableContainerTextInstance(
-  parentContainer: Container,
-  text: string,
-) {
-  if (__DEV__) {
-    warnForInsertedHydratedText(parentContainer, text);
-  }
-}
-
-export function didNotFindHydratableContainerSuspenseInstance(
-  parentContainer: Container,
-) {
-  if (__DEV__) {
-    // TODO: warnForInsertedHydratedSuspense(parentContainer);
-  }
-}
-
-export function didNotFindHydratableInstance(
-  parentType: string,
-  parentProps: Props,
-  parentInstance: Instance,
-  type: string,
-  props: Props,
-) {
-  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
-    warnForInsertedHydratedElement(parentInstance, type, props);
-  }
-}
-
-export function didNotFindHydratableTextInstance(
-  parentType: string,
-  parentProps: Props,
-  parentInstance: Instance,
-  text: string,
-) {
-  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
-    warnForInsertedHydratedText(parentInstance, text);
-  }
-}
-
-export function didNotFindHydratableSuspenseInstance(
-  parentType: string,
-  parentProps: Props,
-  parentInstance: Instance,
-) {
-  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
-    // TODO: warnForInsertedHydratedSuspense(parentInstance);
-  }
 }
 
 export function getFundamentalComponentInstance(
@@ -1214,4 +1073,124 @@ export function setupIntersectionObserver(
       observer.unobserve((target: any));
     },
   };
+}
+
+
+
+/**
+ * dev环境
+ */
+
+ export function didNotMatchHydratedContainerTextInstance(
+  parentContainer: Container,
+  textInstance: TextInstance,
+  text: string,
+) {
+  if (__DEV__) {
+    warnForUnmatchedText(textInstance, text);
+  }
+}
+
+export function didNotMatchHydratedTextInstance(
+  parentType: string,
+  parentProps: Props,
+  parentInstance: Instance,
+  textInstance: TextInstance,
+  text: string,
+) {
+  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+    warnForUnmatchedText(textInstance, text);
+  }
+}
+
+export function didNotHydrateContainerInstance(
+  parentContainer: Container,
+  instance: HydratableInstance,
+) {
+  if (__DEV__) {
+    if (instance.nodeType === ELEMENT_NODE) {
+      warnForDeletedHydratableElement(parentContainer, (instance: any));
+    } else if (instance.nodeType === COMMENT_NODE) {
+      // TODO: warnForDeletedHydratableSuspenseBoundary
+    } else {
+      warnForDeletedHydratableText(parentContainer, (instance: any));
+    }
+  }
+}
+
+export function didNotHydrateInstance(
+  parentType: string,
+  parentProps: Props,
+  parentInstance: Instance,
+  instance: HydratableInstance,
+) {
+  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+    if (instance.nodeType === ELEMENT_NODE) {
+      warnForDeletedHydratableElement(parentInstance, (instance: any));
+    } else if (instance.nodeType === COMMENT_NODE) {
+      // TODO: warnForDeletedHydratableSuspenseBoundary
+    } else {
+      warnForDeletedHydratableText(parentInstance, (instance: any));
+    }
+  }
+}
+
+export function didNotFindHydratableContainerInstance(
+  parentContainer: Container,
+  type: string,
+  props: Props,
+) {
+  if (__DEV__) {
+    warnForInsertedHydratedElement(parentContainer, type, props);
+  }
+}
+
+export function didNotFindHydratableContainerTextInstance(
+  parentContainer: Container,
+  text: string,
+) {
+  if (__DEV__) {
+    warnForInsertedHydratedText(parentContainer, text);
+  }
+}
+
+export function didNotFindHydratableContainerSuspenseInstance(
+  parentContainer: Container,
+) {
+  if (__DEV__) {
+    // TODO: warnForInsertedHydratedSuspense(parentContainer);
+  }
+}
+
+export function didNotFindHydratableInstance(
+  parentType: string,
+  parentProps: Props,
+  parentInstance: Instance,
+  type: string,
+  props: Props,
+) {
+  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+    warnForInsertedHydratedElement(parentInstance, type, props);
+  }
+}
+
+export function didNotFindHydratableTextInstance(
+  parentType: string,
+  parentProps: Props,
+  parentInstance: Instance,
+  text: string,
+) {
+  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+    warnForInsertedHydratedText(parentInstance, text);
+  }
+}
+
+export function didNotFindHydratableSuspenseInstance(
+  parentType: string,
+  parentProps: Props,
+  parentInstance: Instance,
+) {
+  if (__DEV__ && parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
+    // TODO: warnForInsertedHydratedSuspense(parentInstance);
+  }
 }
