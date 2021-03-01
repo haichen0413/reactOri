@@ -130,15 +130,20 @@ function legacyRenderSubtreeIntoContainer(
 export function findDOMNode(
   componentOrElement: Element | ?React$Component<any, any>,
 ): null | Element | Text {
-  if (componentOrElement == null) {
-    return null;
-  }
-  if ((componentOrElement: any).nodeType === ELEMENT_NODE) {
-    return (componentOrElement: any);
+  if (componentOrElement == null) return null;
+
+  if (componentOrElement.nodeType === ELEMENT_NODE) {
+    return componentOrElement
   }
   return findHostInstance(componentOrElement);
 }
 
+/**
+ * 服务端渲染
+ * @param {} element 
+ * @param {*} container 
+ * @param {*} callback 
+ */
 export function hydrate(
   element: React$Node,
   container: Container,
@@ -175,6 +180,7 @@ export function render(
   );
 }
 
+// 将子树渲染到容器中 （unstable）
 export function unstable_renderSubtreeIntoContainer(
   parentComponent: React$Component<any, any>,
   element: React$Element<any>,

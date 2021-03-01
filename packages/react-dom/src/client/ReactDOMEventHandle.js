@@ -59,7 +59,7 @@ function registerReactDOMEvent(
   domEventName: DOMEventName,
   isCapturePhaseListener: boolean,
 ): void {
-  if ((target: any).nodeType === ELEMENT_NODE) {
+  if (target.nodeType === ELEMENT_NODE) {
     // Do nothing. We already attached all root listeners.
   } else if (enableScopeAPI && isReactScope(target)) {
     // Do nothing. We already attached all root listeners.
@@ -97,12 +97,6 @@ export function createEventHandle(
     // Unfortunately, the downside of this invariant is that *removing* a native
     // event from the list of known events has now become a breaking change for
     // any code relying on the createEventHandle API.
-    invariant(
-      allNativeEvents.has(domEventName),
-      'Cannot call unstable_createEventHandle with "%s", as it is not an event known to React.',
-      domEventName,
-    );
-
     let isCapturePhaseListener = false;
     if (options != null) {
       const optionsCapture = options.capture;
@@ -113,13 +107,8 @@ export function createEventHandle(
 
     const eventHandle = (
       target: EventTarget | ReactScopeInstance,
-      callback: (SyntheticEvent<EventTarget>) => void,
+      callback: (SyntheticEvent<EventTarget>) => void
     ) => {
-      invariant(
-        typeof callback === 'function',
-        'ReactDOM.createEventHandle: setter called with an invalid ' +
-          'callback. The callback must be a function.',
-      );
       if (!doesTargetHaveEventHandle(target, eventHandle)) {
         addEventHandleToTarget(target, eventHandle);
         registerReactDOMEvent(target, domEventName, isCapturePhaseListener);
@@ -144,5 +133,5 @@ export function createEventHandle(
 
     return eventHandle;
   }
-  return (null: any);
+  return null
 }

@@ -149,9 +149,7 @@ export function getClosestInstanceFromNode(targetNode: Node): null | Fiber {
  * instance, or null if the node was not rendered by this React.
  */
 export function getInstanceFromNode(node: Node): Fiber | null {
-  const inst =
-    (node: any)[internalInstanceKey] ||
-    (node: any)[internalContainerInstanceKey];
+  const inst = node[internalInstanceKey] || node[internalContainerInstanceKey];
   if (inst) {
     if (
       inst.tag === HostComponent ||
@@ -178,22 +176,19 @@ export function getNodeFromInstance(inst: Fiber): Instance | TextInstance {
     return inst.stateNode;
   }
 
-  // Without this first invariant, passing a non-DOM-component triggers the next
-  // invariant for a missing parent, which is super confusing.
-  invariant(false, 'getNodeFromInstance: Invalid argument.');
 }
 
 export function getFiberCurrentPropsFromNode(
   node: Instance | TextInstance | SuspenseInstance,
 ): Props {
-  return (node: any)[internalPropsKey] || null;
+  return node[internalPropsKey] || null;
 }
 
 export function updateFiberProps(
   node: Instance | TextInstance | SuspenseInstance,
   props: Props,
 ): void {
-  (node: any)[internalPropsKey] = props;
+  node[internalPropsKey] = props;
 }
 
 export function getEventListenerSet(node: EventTarget): Set<string> {
@@ -208,16 +203,13 @@ export function getFiberFromScopeInstance(
   scope: ReactScopeInstance,
 ): null | Fiber {
   if (enableScopeAPI) {
-    return (scope: any)[internalInstanceKey] || null;
+    return scope[internalInstanceKey] || null;
   }
   return null;
 }
 
-export function setEventHandlerListeners(
-  scope: EventTarget | ReactScopeInstance,
-  listeners: Set<ReactDOMEventHandleListener>,
-): void {
-  (scope: any)[internalEventHandlerListenersKey] = listeners;
+export function setEventHandlerListeners(scope,listeners) {
+ scope[internalEventHandlerListenersKey] = listeners;
 }
 
 export function getEventHandlerListeners(

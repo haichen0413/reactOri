@@ -30,9 +30,6 @@ type InputWithWrapperState = HTMLInputElement & {
   },
   ...
 };
-
-let didWarnValueDefaultValue = false;
-let didWarnCheckedDefaultChecked = false;
 let didWarnControlledToUncontrolled = false;
 let didWarnUncontrolledToControlled = false;
 
@@ -59,7 +56,7 @@ function isControlled(props) {
  */
 
 export function getHostProps(element: Element, props: Object) {
-  const node = ((element: any): InputWithWrapperState);
+  const node = element
   const checked = props.checked;
 
   const hostProps = Object.assign({}, props, {
@@ -73,46 +70,8 @@ export function getHostProps(element: Element, props: Object) {
 }
 
 export function initWrapperState(element: Element, props: Object) {
-  if (__DEV__) {
-    checkControlledValueProps('input', props);
 
-    if (
-      props.checked !== undefined &&
-      props.defaultChecked !== undefined &&
-      !didWarnCheckedDefaultChecked
-    ) {
-      console.error(
-        '%s contains an input of type %s with both checked and defaultChecked props. ' +
-          'Input elements must be either controlled or uncontrolled ' +
-          '(specify either the checked prop, or the defaultChecked prop, but not ' +
-          'both). Decide between using a controlled or uncontrolled input ' +
-          'element and remove one of these props. More info: ' +
-          'https://reactjs.org/link/controlled-components',
-        getCurrentFiberOwnerNameInDevOrNull() || 'A component',
-        props.type,
-      );
-      didWarnCheckedDefaultChecked = true;
-    }
-    if (
-      props.value !== undefined &&
-      props.defaultValue !== undefined &&
-      !didWarnValueDefaultValue
-    ) {
-      console.error(
-        '%s contains an input of type %s with both value and defaultValue props. ' +
-          'Input elements must be either controlled or uncontrolled ' +
-          '(specify either the value prop, or the defaultValue prop, but not ' +
-          'both). Decide between using a controlled or uncontrolled input ' +
-          'element and remove one of these props. More info: ' +
-          'https://reactjs.org/link/controlled-components',
-        getCurrentFiberOwnerNameInDevOrNull() || 'A component',
-        props.type,
-      );
-      didWarnValueDefaultValue = true;
-    }
-  }
-
-  const node = ((element: any): InputWithWrapperState);
+  const node = element
   const defaultValue = props.defaultValue == null ? '' : props.defaultValue;
 
   node._wrapperState = {
@@ -126,7 +85,7 @@ export function initWrapperState(element: Element, props: Object) {
 }
 
 export function updateChecked(element: Element, props: Object) {
-  const node = ((element: any): InputWithWrapperState);
+  const node = element
   const checked = props.checked;
   if (checked != null) {
     setValueForProperty(node, 'checked', checked, false);
@@ -134,39 +93,7 @@ export function updateChecked(element: Element, props: Object) {
 }
 
 export function updateWrapper(element: Element, props: Object) {
-  const node = ((element: any): InputWithWrapperState);
-  if (__DEV__) {
-    const controlled = isControlled(props);
-
-    if (
-      !node._wrapperState.controlled &&
-      controlled &&
-      !didWarnUncontrolledToControlled
-    ) {
-      console.error(
-        'A component is changing an uncontrolled input to be controlled. ' +
-          'This is likely caused by the value changing from undefined to ' +
-          'a defined value, which should not happen. ' +
-          'Decide between using a controlled or uncontrolled input ' +
-          'element for the lifetime of the component. More info: https://reactjs.org/link/controlled-components',
-      );
-      didWarnUncontrolledToControlled = true;
-    }
-    if (
-      node._wrapperState.controlled &&
-      !controlled &&
-      !didWarnControlledToUncontrolled
-    ) {
-      console.error(
-        'A component is changing a controlled input to be uncontrolled. ' +
-          'This is likely caused by the value changing from a defined to ' +
-          'undefined, which should not happen. ' +
-          'Decide between using a controlled or uncontrolled input ' +
-          'element for the lifetime of the component. More info: https://reactjs.org/link/controlled-components',
-      );
-      didWarnControlledToUncontrolled = true;
-    }
-  }
+  const node = element
 
   updateChecked(element, props);
 
@@ -178,13 +105,12 @@ export function updateWrapper(element: Element, props: Object) {
       if (
         (value === 0 && node.value === '') ||
         // We explicitly want to coerce to number here if possible.
-        // eslint-disable-next-line
-        node.value != (value: any)
+        node.value != value
       ) {
-        node.value = toString((value: any));
+        node.value = toString(value);
       }
-    } else if (node.value !== toString((value: any))) {
-      node.value = toString((value: any));
+    } else if (node.value !== toString(value)) {
+      node.value = toString(value);
     }
   } else if (type === 'submit' || type === 'reset') {
     // Submit/reset inputs need the attribute removed completely to avoid
@@ -236,7 +162,7 @@ export function postMountWrapper(
   props: Object,
   isHydrating: boolean,
 ) {
-  const node = ((element: any): InputWithWrapperState);
+  const node = element
 
   // Do not assign value if it is already set. This prevents user text input
   // from being lost during SSR hydration.
@@ -344,7 +270,7 @@ export function postMountWrapper(
 }
 
 export function restoreControlledState(element: Element, props: Object) {
-  const node = ((element: any): InputWithWrapperState);
+  const node = element
   updateWrapper(node, props);
   updateNamedCousins(node, props);
 }
@@ -352,10 +278,10 @@ export function restoreControlledState(element: Element, props: Object) {
 function updateNamedCousins(rootNode, props) {
   const name = props.name;
   if (props.type === 'radio' && name != null) {
-    let queryRoot: Element = rootNode;
+    let queryRoot = rootNode;
 
     while (queryRoot.parentNode) {
-      queryRoot = ((queryRoot.parentNode: any): Element);
+      queryRoot = queryRoot.parentNode
     }
 
     // If `rootNode.form` was non-null, then we could try `form.elements`,
@@ -370,7 +296,7 @@ function updateNamedCousins(rootNode, props) {
     );
 
     for (let i = 0; i < group.length; i++) {
-      const otherNode = ((group[i]: any): HTMLInputElement);
+      const otherNode = (group[i]: HTMLInputElement);
       if (otherNode === rootNode || otherNode.form !== rootNode.form) {
         continue;
       }
@@ -379,12 +305,6 @@ function updateNamedCousins(rootNode, props) {
       // That's probably okay; we don't support it just as we don't support
       // mixing React radio buttons with non-React ones.
       const otherProps = getFiberCurrentPropsFromNode(otherNode);
-      invariant(
-        otherProps,
-        'ReactDOMInput: Mixing React and non-React radio inputs with the ' +
-          'same `name` is not supported.',
-      );
-
       // We need update the tracked value on the named cousin since the value
       // was changed but the input saw no event or value set
       updateValueIfChanged(otherNode);

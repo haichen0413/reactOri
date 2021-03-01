@@ -13,7 +13,7 @@ import type {Container} from './ReactDOMHostConfig';
 import '../shared/checkReact';
 import {
   findDOMNode,
-  render,
+  render, // 重点
   hydrate,
   unstable_renderSubtreeIntoContainer,
   unmountComponentAtNode,
@@ -41,7 +41,6 @@ import {
 import {createPortal as createPortalImpl} from 'react-reconciler/src/ReactPortal';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
 import ReactVersion from 'shared/ReactVersion';
-import invariant from 'shared/invariant';
 import {
   warnUnstableRenderSubtreeIntoContainer,
   enableNewReconciler,
@@ -77,28 +76,6 @@ setAttemptHydrationAtCurrentPriority(attemptHydrationAtCurrentPriority);
 setGetCurrentUpdatePriority(getCurrentUpdateLanePriority);
 setAttemptHydrationAtPriority(runWithPriority);
 
-let didWarnAboutUnstableCreatePortal = false;
-let didWarnAboutUnstableRenderSubtreeIntoContainer = false;
-
-if (__DEV__) {
-  if (
-    typeof Map !== 'function' ||
-    // $FlowIssue Flow incorrectly thinks Map has no prototype
-    Map.prototype == null ||
-    typeof Map.prototype.forEach !== 'function' ||
-    typeof Set !== 'function' ||
-    // $FlowIssue Flow incorrectly thinks Set has no prototype
-    Set.prototype == null ||
-    typeof Set.prototype.clear !== 'function' ||
-    typeof Set.prototype.forEach !== 'function'
-  ) {
-    console.error(
-      'React depends on Map and Set built-in types. Make sure that you load a ' +
-        'polyfill in older browsers. https://reactjs.org/link/react-polyfills',
-    );
-  }
-}
-
 setRestoreImplementation(restoreControlledState);
 setBatchingImplementation(
   batchedUpdates,
@@ -107,15 +84,17 @@ setBatchingImplementation(
   batchedEventUpdates,
 );
 
+/**
+ * 创建入口
+ * @param {*} children 
+ * @param {*} container 
+ * @param {*} key 
+ */
 function createPortal(
   children: ReactNodeList,
   container: Container,
   key: ?string = null,
 ): React$Portal {
-  invariant(
-    isValidContainer(container),
-    'Target container is not a DOM element.',
-  );
   // TODO: pass ReactDOM portal implementation as third argument
   // $FlowFixMe The Flow type is opaque but there's no way to actually create it.
   return createPortalImpl(children, container, null, key);
@@ -133,19 +112,6 @@ function renderSubtreeIntoContainer(
   containerNode: Container,
   callback: ?Function,
 ) {
-  if (__DEV__) {
-    if (
-      warnUnstableRenderSubtreeIntoContainer &&
-      !didWarnAboutUnstableRenderSubtreeIntoContainer
-    ) {
-      didWarnAboutUnstableRenderSubtreeIntoContainer = true;
-      console.warn(
-        'ReactDOM.unstable_renderSubtreeIntoContainer() is deprecated ' +
-          'and will be removed in a future major release. Consider using ' +
-          'React Portals instead.',
-      );
-    }
-  }
   return unstable_renderSubtreeIntoContainer(
     parentComponent,
     element,
@@ -159,20 +125,12 @@ function unstable_createPortal(
   container: Container,
   key: ?string = null,
 ) {
-  if (__DEV__) {
-    if (!didWarnAboutUnstableCreatePortal) {
-      didWarnAboutUnstableCreatePortal = true;
-      console.warn(
-        'The ReactDOM.unstable_createPortal() alias has been deprecated, ' +
-          'and will be removed in React 18+. Update your code to use ' +
-          'ReactDOM.createPortal() instead. It has the exact same API, ' +
-          'but without the "unstable_" prefix.',
-      );
-    }
-  }
   return createPortal(children, container, key);
 }
 
+/**
+ * 内部构件
+ */
 const Internals = {
   // Keep in sync with ReactTestUtils.js, and ReactTestUtilsAct.js.
   // This is an array for better minification.

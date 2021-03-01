@@ -1614,13 +1614,7 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
   }
 
   const prevInteractions = pushInteractions(root);
-
-  if (__DEV__) {
-    if (enableDebugTracing) {
-      logRenderStarted(lanes);
-    }
-  }
-
+  
   if (enableSchedulingProfiler) {
     markRenderStarted(lanes);
   }
