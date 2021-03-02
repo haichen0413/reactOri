@@ -776,17 +776,8 @@ function ChildReconciler(shouldTrackSideEffects) {
     // If you change this code, also update reconcileChildrenIterator() which
     // uses the same algorithm.
 
-    if (__DEV__) {
-      // First, validate keys.
-      let knownKeys = null;
-      for (let i = 0; i < newChildren.length; i++) {
-        const child = newChildren[i];
-        knownKeys = warnOnInvalidKey(child, knownKeys, returnFiber);
-      }
-    }
-
-    let resultingFirstChild: Fiber | null = null;
-    let previousNewFiber: Fiber | null = null;
+    let resultingFirstChild = null;
+    let previousNewFiber = null;
 
     let oldFiber = currentFirstChild;
     let lastPlacedIndex = 0;
@@ -916,58 +907,8 @@ function ChildReconciler(shouldTrackSideEffects) {
     // but using the iterator instead.
 
     const iteratorFn = getIteratorFn(newChildrenIterable);
-    invariant(
-      typeof iteratorFn === 'function',
-      'An object is not an iterable. This error is likely caused by a bug in ' +
-        'React. Please file an issue.',
-    );
-
-    if (__DEV__) {
-      // We don't support rendering Generators because it's a mutation.
-      // See https://github.com/facebook/react/issues/12995
-      if (
-        typeof Symbol === 'function' &&
-        // $FlowFixMe Flow doesn't know about toStringTag
-        newChildrenIterable[Symbol.toStringTag] === 'Generator'
-      ) {
-        if (!didWarnAboutGenerators) {
-          console.error(
-            'Using Generators as children is unsupported and will likely yield ' +
-              'unexpected results because enumerating a generator mutates it. ' +
-              'You may convert it to an array with `Array.from()` or the ' +
-              '`[...spread]` operator before rendering. Keep in mind ' +
-              'you might need to polyfill these features for older browsers.',
-          );
-        }
-        didWarnAboutGenerators = true;
-      }
-
-      // Warn about using Maps as children
-      if ((newChildrenIterable: any).entries === iteratorFn) {
-        if (!didWarnAboutMaps) {
-          console.error(
-            'Using Maps as children is not supported. ' +
-              'Use an array of keyed ReactElements instead.',
-          );
-        }
-        didWarnAboutMaps = true;
-      }
-
-      // First, validate keys.
-      // We'll get a different iterator later for the main pass.
-      const newChildren = iteratorFn.call(newChildrenIterable);
-      if (newChildren) {
-        let knownKeys = null;
-        let step = newChildren.next();
-        for (; !step.done; step = newChildren.next()) {
-          const child = step.value;
-          knownKeys = warnOnInvalidKey(child, knownKeys, returnFiber);
-        }
-      }
-    }
 
     const newChildren = iteratorFn.call(newChildrenIterable);
-    invariant(newChildren != null, 'An iterable object provided no iterator.');
 
     let resultingFirstChild: Fiber | null = null;
     let previousNewFiber: Fiber | null = null;
