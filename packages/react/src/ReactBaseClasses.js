@@ -56,13 +56,6 @@ Component.prototype.isReactComponent = {};
  * @protected
  */
 Component.prototype.setState = function(partialState, callback) {
-  invariant(
-    typeof partialState === 'object' ||
-      typeof partialState === 'function' ||
-      partialState == null,
-    'setState(...): takes an object of state variables to update or a ' +
-      'function which returns an object of state variables.',
-  );
   this.updater.enqueueSetState(this, partialState, callback, 'setState');
 };
 
@@ -89,38 +82,6 @@ Component.prototype.forceUpdate = function(callback) {
  * we would like to deprecate them, we're not going to move them over to this
  * modern base class. Instead, we define a getter that warns if it's accessed.
  */
-if (__DEV__) {
-  const deprecatedAPIs = {
-    isMounted: [
-      'isMounted',
-      'Instead, make sure to clean up subscriptions and pending requests in ' +
-        'componentWillUnmount to prevent memory leaks.',
-    ],
-    replaceState: [
-      'replaceState',
-      'Refactor your code to use setState instead (see ' +
-        'https://github.com/facebook/react/issues/3236).',
-    ],
-  };
-  const defineDeprecationWarning = function(methodName, info) {
-    Object.defineProperty(Component.prototype, methodName, {
-      get: function() {
-        lowPriorityWarningWithoutStack(
-          false,
-          '%s(...) is deprecated in plain JavaScript React classes. %s',
-          info[0],
-          info[1],
-        );
-        return undefined;
-      },
-    });
-  };
-  for (const fnName in deprecatedAPIs) {
-    if (deprecatedAPIs.hasOwnProperty(fnName)) {
-      defineDeprecationWarning(fnName, deprecatedAPIs[fnName]);
-    }
-  }
-}
 
 function ComponentDummy() {}
 ComponentDummy.prototype = Component.prototype;

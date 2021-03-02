@@ -13,10 +13,33 @@ import {
   REACT_SUSPENSE_TYPE,
   REACT_SUSPENSE_LIST_TYPE,
 } from 'shared/ReactSymbols';
+import {forEach, map, count, toArray, only} from './ReactChildren';
 
+import {withSuspenseConfig} from './ReactBatchConfig';
+import {
+  createElementWithValidation,
+  createFactoryWithValidation,
+  cloneElementWithValidation,
+  jsxWithValidation,
+  jsxWithValidationStatic,
+  jsxWithValidationDynamic,
+} from './ReactElementValidator';
+import ReactSharedInternals from './ReactSharedInternals';
+import createFundamental from 'shared/createFundamentalComponent';
+import createResponder from 'shared/createEventResponder';
+import createScope from 'shared/createScope';
+import {
+  enableJSXTransformAPI,
+  enableFlareAPI,
+  enableFundamentalAPI,
+  enableScopeAPI,
+} from 'shared/ReactFeatureFlags';
+
+/**
+ * important
+ */
 import {Component, PureComponent} from './ReactBaseClasses';
 import {createRef} from './ReactCreateRef';
-import {forEach, map, count, toArray, only} from './ReactChildren';
 import {
   createElement,
   createFactory,
@@ -41,25 +64,7 @@ import {
   useState,
   useResponder,
 } from './ReactHooks';
-import {withSuspenseConfig} from './ReactBatchConfig';
-import {
-  createElementWithValidation,
-  createFactoryWithValidation,
-  cloneElementWithValidation,
-  jsxWithValidation,
-  jsxWithValidationStatic,
-  jsxWithValidationDynamic,
-} from './ReactElementValidator';
-import ReactSharedInternals from './ReactSharedInternals';
-import createFundamental from 'shared/createFundamentalComponent';
-import createResponder from 'shared/createEventResponder';
-import createScope from 'shared/createScope';
-import {
-  enableJSXTransformAPI,
-  enableFlareAPI,
-  enableFundamentalAPI,
-  enableScopeAPI,
-} from 'shared/ReactFeatureFlags';
+
 const React = {
   Children: {
     map,

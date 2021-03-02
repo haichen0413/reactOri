@@ -605,23 +605,6 @@ function updateFunctionComponent(
   nextProps: any,
   renderExpirationTime,
 ) {
-  if (__DEV__) {
-    if (workInProgress.type !== workInProgress.elementType) {
-      // Lazy component props can't be validated in createElement
-      // because they're only guaranteed to be resolved here.
-      const innerPropTypes = Component.propTypes;
-      if (innerPropTypes) {
-        checkPropTypes(
-          innerPropTypes,
-          nextProps, // Resolved props
-          'prop',
-          getComponentName(Component),
-          getCurrentFiberStackInDev,
-        );
-      }
-    }
-  }
-
   let context;
   if (!disableLegacyContext) {
     const unmaskedContext = getUnmaskedContext(workInProgress, Component, true);
@@ -630,45 +613,14 @@ function updateFunctionComponent(
 
   let nextChildren;
   prepareToReadContext(workInProgress, renderExpirationTime);
-  if (__DEV__) {
-    ReactCurrentOwner.current = workInProgress;
-    setCurrentPhase('render');
-    nextChildren = renderWithHooks(
-      current,
-      workInProgress,
-      Component,
-      nextProps,
-      context,
-      renderExpirationTime,
-    );
-    if (
-      debugRenderPhaseSideEffects ||
-      (debugRenderPhaseSideEffectsForStrictMode &&
-        workInProgress.mode & StrictMode)
-    ) {
-      // Only double-render components with Hooks
-      if (workInProgress.memoizedState !== null) {
-        nextChildren = renderWithHooks(
-          current,
-          workInProgress,
-          Component,
-          nextProps,
-          context,
-          renderExpirationTime,
-        );
-      }
-    }
-    setCurrentPhase(null);
-  } else {
-    nextChildren = renderWithHooks(
-      current,
-      workInProgress,
-      Component,
-      nextProps,
-      context,
-      renderExpirationTime,
-    );
-  }
+  nextChildren = renderWithHooks(
+    current,
+    workInProgress,
+    Component,
+    nextProps,
+    context,
+    renderExpirationTime,
+  );
 
   if (current !== null && !didReceiveUpdate) {
     bailoutHooks(current, workInProgress, renderExpirationTime);
@@ -697,23 +649,6 @@ function updateClassComponent(
   nextProps,
   renderExpirationTime: ExpirationTime,
 ) {
-  if (__DEV__) {
-    if (workInProgress.type !== workInProgress.elementType) {
-      // Lazy component props can't be validated in createElement
-      // because they're only guaranteed to be resolved here.
-      const innerPropTypes = Component.propTypes;
-      if (innerPropTypes) {
-        checkPropTypes(
-          innerPropTypes,
-          nextProps, // Resolved props
-          'prop',
-          getComponentName(Component),
-          getCurrentFiberStackInDev,
-        );
-      }
-    }
-  }
-
   // Push context providers early to prevent context stack mismatches.
   // During mounting we don't know the child context yet as the instance doesn't exist.
   // We will invalidate the child context in finishClassComponent() right after rendering.
@@ -734,7 +669,7 @@ function updateClassComponent(
       // inside a non- concurrent tree, in an inconsistent state. We want to
       // tree it like a new mount, even though an empty version of it already
       // committed. Disconnect the alternate pointers.
-      current.alternate = null;
+      current.alternate = null; // alternate 候补，备份
       workInProgress.alternate = null;
       // Since this is conceptually a new fiber, schedule a Placement effect
       workInProgress.effectTag |= Placement;
@@ -778,18 +713,6 @@ function updateClassComponent(
     hasContext,
     renderExpirationTime,
   );
-  if (__DEV__) {
-    let inst = workInProgress.stateNode;
-    if (inst.props !== nextProps) {
-      warning(
-        didWarnAboutReassigningProps,
-        'It looks like %s is reassigning its own `this.props` while rendering. ' +
-          'This is not supported and can lead to confusing bugs.',
-        getComponentName(workInProgress.type) || 'a component',
-      );
-      didWarnAboutReassigningProps = true;
-    }
-  }
   return nextUnitOfWork;
 }
 
@@ -839,20 +762,7 @@ function finishClassComponent(
       stopProfilerTimerIfRunning(workInProgress);
     }
   } else {
-    if (__DEV__) {
-      setCurrentPhase('render');
-      nextChildren = instance.render();
-      if (
-        debugRenderPhaseSideEffects ||
-        (debugRenderPhaseSideEffectsForStrictMode &&
-          workInProgress.mode & StrictMode)
-      ) {
-        instance.render();
-      }
-      setCurrentPhase(null);
-    } else {
-      nextChildren = instance.render();
-    }
+    nextChildren = instance.render();
   }
 
   // React DevTools reads this flag.

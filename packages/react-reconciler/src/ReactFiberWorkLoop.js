@@ -387,7 +387,6 @@ export function scheduleUpdateOnFiber(
   expirationTime: ExpirationTime,
 ) {
   checkForNestedUpdates();
-  warnAboutInvalidUpdatesOnClassComponentsInDEV(fiber);
 
   const root = markUpdateTimeFromFiberToRoot(fiber, expirationTime);
   if (root === null) {

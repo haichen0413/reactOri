@@ -37,40 +37,6 @@ export function useContext<T>(
   unstable_observedBits: number | boolean | void,
 ) {
   const dispatcher = resolveDispatcher();
-  if (__DEV__) {
-    warning(
-      unstable_observedBits === undefined,
-      'useContext() second argument is reserved for future ' +
-        'use in React. Passing it is not supported. ' +
-        'You passed: %s.%s',
-      unstable_observedBits,
-      typeof unstable_observedBits === 'number' && Array.isArray(arguments[2])
-        ? '\n\nDid you call array.map(useContext)? ' +
-          'Calling Hooks inside a loop is not supported. ' +
-          'Learn more at https://fb.me/rules-of-hooks'
-        : '',
-    );
-
-    // TODO: add a more generic warning for invalid values.
-    if ((Context: any)._context !== undefined) {
-      const realContext = (Context: any)._context;
-      // Don't deduplicate because this legitimately causes bugs
-      // and nobody should be using this in existing code.
-      if (realContext.Consumer === Context) {
-        warning(
-          false,
-          'Calling useContext(Context.Consumer) is not supported, may cause bugs, and will be ' +
-            'removed in a future major release. Did you mean to call useContext(Context) instead?',
-        );
-      } else if (realContext.Provider === Context) {
-        warning(
-          false,
-          'Calling useContext(Context.Provider) is not supported. ' +
-            'Did you mean to call useContext(Context) instead?',
-        );
-      }
-    }
-  }
   return dispatcher.useContext(Context, unstable_observedBits);
 }
 

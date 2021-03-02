@@ -138,24 +138,6 @@ function scheduleRootUpdate(
   suspenseConfig: null | SuspenseConfig,
   callback: ?Function,
 ) {
-  if (__DEV__) {
-    if (
-      ReactCurrentFiberPhase === 'render' &&
-      ReactCurrentFiberCurrent !== null &&
-      !didWarnAboutNestedUpdates
-    ) {
-      didWarnAboutNestedUpdates = true;
-      warningWithoutStack(
-        false,
-        'Render methods should be a pure function of props and state; ' +
-          'triggering nested component updates from render is not allowed. ' +
-          'If necessary, trigger nested updates in componentDidUpdate.\n\n' +
-          'Check the render method of %s.',
-        getComponentName(ReactCurrentFiberCurrent.type) || 'Unknown',
-      );
-    }
-  }
-
   const update = createUpdate(expirationTime, suspenseConfig);
   // Caution: React DevTools currently depends on this property
   // being called "element".
@@ -188,18 +170,6 @@ export function updateContainerAtExpirationTime(
 ) {
   // TODO: If this is a nested container, this won't be the root.
   const current = container.current;
-
-  if (__DEV__) {
-    if (ReactFiberInstrumentation.debugTool) {
-      if (current.alternate === null) {
-        ReactFiberInstrumentation.debugTool.onMountContainer(container);
-      } else if (element === null) {
-        ReactFiberInstrumentation.debugTool.onUnmountContainer(container);
-      } else {
-        ReactFiberInstrumentation.debugTool.onUpdateContainer(container);
-      }
-    }
-  }
 
   const context = getContextForSubtree(parentComponent);
   if (container.context === null) {
@@ -313,13 +283,7 @@ export function updateContainer(
 ): ExpirationTime {
   const current = container.current;
   const currentTime = requestCurrentTime();
-  if (__DEV__) {
-    // $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-    if ('undefined' !== typeof jest) {
-      warnIfUnmockedScheduler(current);
-      warnIfNotScopedWithMatchingAct(current);
-    }
-  }
+
   const suspenseConfig = requestCurrentSuspenseConfig();
   const expirationTime = computeExpirationForFiber(
     currentTime,
@@ -410,78 +374,6 @@ let overrideProps = null;
 let scheduleUpdate = null;
 let setSuspenseHandler = null;
 
-if (__DEV__) {
-  const copyWithSetImpl = (
-    obj: Object | Array<any>,
-    path: Array<string | number>,
-    idx: number,
-    value: any,
-  ) => {
-    if (idx >= path.length) {
-      return value;
-    }
-    const key = path[idx];
-    const updated = Array.isArray(obj) ? obj.slice() : {...obj};
-    // $FlowFixMe number or string is fine here
-    updated[key] = copyWithSetImpl(obj[key], path, idx + 1, value);
-    return updated;
-  };
-
-  const copyWithSet = (
-    obj: Object | Array<any>,
-    path: Array<string | number>,
-    value: any,
-  ): Object | Array<any> => {
-    return copyWithSetImpl(obj, path, 0, value);
-  };
-
-  // Support DevTools editable values for useState and useReducer.
-  overrideHookState = (
-    fiber: Fiber,
-    id: number,
-    path: Array<string | number>,
-    value: any,
-  ) => {
-    // For now, the "id" of stateful hooks is just the stateful hook index.
-    // This may change in the future with e.g. nested hooks.
-    let currentHook = fiber.memoizedState;
-    while (currentHook !== null && id > 0) {
-      currentHook = currentHook.next;
-      id--;
-    }
-    if (currentHook !== null) {
-      const newState = copyWithSet(currentHook.memoizedState, path, value);
-      currentHook.memoizedState = newState;
-      currentHook.baseState = newState;
-
-      // We aren't actually adding an update to the queue,
-      // because there is no update we can add for useReducer hooks that won't trigger an error.
-      // (There's no appropriate action type for DevTools overrides.)
-      // As a result though, React will see the scheduled update as a noop and bailout.
-      // Shallow cloning props works as a workaround for now to bypass the bailout check.
-      fiber.memoizedProps = {...fiber.memoizedProps};
-
-      scheduleWork(fiber, Sync);
-    }
-  };
-
-  // Support DevTools props for function components, forwardRef, memo, host components, etc.
-  overrideProps = (fiber: Fiber, path: Array<string | number>, value: any) => {
-    fiber.pendingProps = copyWithSet(fiber.memoizedProps, path, value);
-    if (fiber.alternate) {
-      fiber.alternate.pendingProps = fiber.pendingProps;
-    }
-    scheduleWork(fiber, Sync);
-  };
-
-  scheduleUpdate = (fiber: Fiber) => {
-    scheduleWork(fiber, Sync);
-  };
-
-  setSuspenseHandler = (newShouldSuspendImpl: Fiber => boolean) => {
-    shouldSuspendImpl = newShouldSuspendImpl;
-  };
-}
 
 export function injectIntoDevTools(devToolsConfig: DevToolsConfig): boolean {
   const {findFiberByHostInstance} = devToolsConfig;
